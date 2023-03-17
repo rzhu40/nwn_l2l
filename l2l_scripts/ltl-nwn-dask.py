@@ -4,6 +4,7 @@ import argparse
 import numpy as np 
 from time import strftime
 from dask.distributed import Client, LocalCluster
+from dask_jobqueue import PBSCluster
 
 from l2l.utils.environment import Environment
 from l2l.optimizers.simulatedannealing.optimizer import SimulatedAnnealingParameters, SimulatedAnnealingOptimizer, AvailableCoolingSchedules
@@ -15,46 +16,108 @@ logger = logging.getLogger('bin.ltl-fun-sa')
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nprocs", type=int, required=True,
-                        help="Number of processes in parallel.")
-    parser.add_argument("--task", type=str, required=False, 
-                        default="volterra", 
-                        help="Benchmark task for the NWN.")
+    # NOTE These are for dask
+    # Just using one node per script
+    # parser.add_argument("--nnodes", type=int, required=True,
+    #                     help="Number of nodes to request.")
+#     parser.add_argument("--scheduler", type = int,
+#                         required=False, default = 9999,
+#                         help="IP address of scheduler, e.g. 127.0.0.1:9999.")
+    parser.add_argument("--cluster_mode", type=str, 
+                        required=False, default = "Local",
+                        help="Cluster type, Local| PBS. Defaults to Local.")
+    parser.add_argument("--nworkers", type=int, 
+                        required=False, default = 0,
+                        help="Number of workers job in dask.")
+    parser.add_argument("--tpw", type=int, 
+                        required=False, default = 1,
+                        help="Number of threads per worker. Local only!")
+    parser.add_argument("--njobs", type=int, 
+                        required=False, default = 1,
+                        help="Number of PBS jobs to request. PBS only!")
+    parser.add_argument("--ncores", type=int, 
+                        required=False, default = 1,
+                        help="Number of cores to request. PBS only!")
+    # parser.add_argument("--nprocs", type=int, 
+    #                     required=False, default = 1,
+    #                     help="Number of processes per job in dask.")
+    parser.add_argument("--mem", type=int, 
+                        required=False, default = 1,
+                        help="Memory, GB. PBS only!")
+    parser.add_argument("--walltime", type=int, 
+                        required=False, default = 1,
+                        help="Wall time, hr. PBS only!")
+
+    # NOTE These are for l2l
     parser.add_argument("--label", type=str,required=False, 
                         default=strftime("%Y-%m-%d-%H%M%S"),
                         help="Label of current run, defaults to time")
+    parser.add_argument("--task", type=str, required=False, 
+                        default="volterra", 
+                        help="Benchmark task for the NWN.")
+    parser.add_argument("--T0", type=float, required=False, default = 0, 
+                        help="Pre-initialization time for the task, in unit of second. ")
+    
     parser.add_argument("--W0", type=float,required=False,
                         help="Starting input weight.")
     parser.add_argument("--b0", type=float,required=False,
                         help="Starting input bias.")
-    parser.add_argument("--T0", type=float, required=False, default = 0, 
-                        help="Pre-initialization time for the task, in unit of second. ")
     
     args = parser.parse_args()
     task = args.task
     name = f'LTL-NWN-{task}-SA'
-    # args.label = "debug02"
+    # args.label = "debug04"
     
     # NOTE learn_dict: specify the parameters to learn as keys
     # values are the initial states of eacha parameter, set to "None" for random state.
     learn_dict = {"W_in_mean" : args.W0,
                   "b_in_mean" : args.b0,
-                  "init_time" : args.T0}
-
+                  "init_time" : args.T0/10}
+    
     parameters = SimulatedAnnealingParameters(
-                    n_parallel_runs=24, n_iteration=50,
+                    n_parallel_runs=16, n_iteration=50,
                     noisy_step=.1, temp_decay=.99, 
                     stop_criterion=-1e-5, seed=21343, 
                     cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
     
-    cluster = LocalCluster(
-                n_workers = args.nprocs,
-                # threads_per_worker = 1,
-                scheduler_port = 8789,
-                dashboard_address = 'localhost:8787',
-                )
+    if args.cluster_mode == "Local":
+        cluster = LocalCluster(
+                    n_workers = args.nworkers,
+                    threads_per_worker = args.tpw,
+                    scheduler_port = 12121,
+                    dashboard_address = 'localhost:11113',
+                    )
+        
+    elif args.cluster_mode == "PBS":
+        dask_log_path = f"/project/NASN/rzhu/l2l_data/LTL_logs/pbs_logs/{args.label}"
+        os.makedirs(dask_log_path, exist_ok=True)
+        
+        # TODO directly use IP address for client.
+        cluster = PBSCluster(
+                        name = f"dask_{args.label}",
+                        cores = args.ncores, 
+                        n_workers = args.nworkers, 
+    #                     processes = args.nprocs,
+                        shebang='#!/bin/bash',
+                        memory = f'{args.mem}GB',
+                        walltime = f'{args.walltime}:{1}:00',
+                        log_directory = dask_log_path,
+                        env_extra = [f'cd /home/rzhu0837/nwn_l2l/',
+                                "module unload python magma openmpi-gcc sqlite",
+                                "module load python/3.8.2 magma/2.5.3 openmpi-gcc/3.1.3",
+                                "echo $PATH",
+                                ],
+                        job_extra = ['-P NASN'],
+                        scheduler_port = 12121,
+                        dashboard_address=':11113',
+    #                  scheduler_options = {'dashboard_address' : 'localhost:11113',
+    #                                       'host' : ':12121'}
+                    )
+        cluster.scale(jobs = args.njobs)
+
     client = Client(cluster)
-    
+    print(cluster.job_script())
+
     try:
         with open('bin/path.conf') as f:
             root_dir_path = f.read().strip()
@@ -91,6 +154,13 @@ def main():
     configure_loggers()
     # Get the trajectory from the environment
     traj = env.trajectory
+
+    logger.info(
+            "dask scheduler address:" 
+            + client.scheduler.address)
+    logger.info(
+            "dask dashboard address (need port forwarding):" 
+            + client.dashboard_link)
     
     # NOTE: Benchmark function
     optimizee = NWN_Optimizee(traj, task, learn_dict, 
@@ -106,16 +176,6 @@ def main():
     # Add post processing
     env.add_postprocessing(optimizer.post_process)
 
-    logger.info("Initial conditions are:")
-    logger.info(learn_dict)
-    logger.info(f"Using {args.nprocs} workers, each has 1 thread.")
-    logger.info(
-            "dask scheduler address:" 
-            + client.scheduler.address)
-    logger.info(
-            "dask dashboard address (need port forwarding):" 
-            + client.dashboard_link)
-    
     # Run the simulation with all parameter combinations
     env.run(optimizee.simulate)
     # env.run(optimizee.simulate_dask)
