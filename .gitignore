@@ -1,1 +1,4 @@
 __pycache__
+dask-worker-space/
+*.lock
+*.json

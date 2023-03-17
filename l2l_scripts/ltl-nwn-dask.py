@@ -27,11 +27,12 @@ def main():
                         required=False, default = "Local",
                         help="Cluster type, Local| PBS. Defaults to Local.")
     parser.add_argument("--nworkers", type=int, 
-                        required=False, default = 0,
+                        required=False, default = 1,
                         help="Number of workers job in dask.")
     parser.add_argument("--tpw", type=int, 
                         required=False, default = 1,
                         help="Number of threads per worker. Local only!")
+    # NOTE following are for PBS clusters.
     parser.add_argument("--njobs", type=int, 
                         required=False, default = 1,
                         help="Number of PBS jobs to request. PBS only!")
@@ -55,6 +56,12 @@ def main():
     parser.add_argument("--task", type=str, required=False, 
                         default="volterra", 
                         help="Benchmark task for the NWN.")
+    parser.add_argument("--ngens", type=int,
+                        required=False, default=50,
+                        help="Number of generations of l2l.")
+    parser.add_argument("--ninds", type=int,
+                        required=False, default=16,
+                        help="Number of individuals per gen.")
     parser.add_argument("--T0", type=float, required=False, default = 0, 
                         help="Pre-initialization time for the task, in unit of second. ")
     
@@ -63,19 +70,34 @@ def main():
     parser.add_argument("--b0", type=float,required=False,
                         help="Starting input bias.")
     
+    
     args = parser.parse_args()
-    task = args.task
-    name = f'LTL-NWN-{task}-SA'
+    name = f'LTL-NWN-{args.task}-SA'
     # args.label = "debug04"
     
     # NOTE learn_dict: specify the parameters to learn as keys
     # values are the initial states of eacha parameter, set to "None" for random state.
-    learn_dict = {"W_in_mean" : args.W0,
-                  "b_in_mean" : args.b0,
-                  "init_time" : args.T0/10}
+
+    # for volterra
+    if args.task == "volterra":
+        learn_dict = {
+            "W_in_mean": args.W0,
+            "b_in_mean": args.b0,
+            "init_time": args.T0
+            }
+        
+    # for learn snn
+    elif args.task == "learn_snn":
+        learn_dict = {
+            # NOTE initializing as 2D arrays somehow leads to bugs
+            # TODO check if np.array() wrapping is necessary in optimizee
+            "W_in"     : np.random.rand(20),
+            "b_in"     : np.random.rand(20),
+            "init_time": args.T0
+            }    
     
     parameters = SimulatedAnnealingParameters(
-                    n_parallel_runs=16, n_iteration=50,
+                    n_parallel_runs=args.ninds, n_iteration=args.ngens,
                     noisy_step=.1, temp_decay=.99, 
                     stop_criterion=-1e-5, seed=21343, 
                     cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
@@ -114,12 +136,13 @@ def main():
     #                                       'host' : ':12121'}
                     )
         cluster.scale(jobs = args.njobs)
+        print(cluster.job_script())
 
     client = Client(cluster)
-    print(cluster.job_script())
 
+    file_path = os.path.dirname(__file__)
     try:
-        with open('bin/path.conf') as f:
+        with open(os.path.join(file_path, 'bin/path.conf')) as f:
             root_dir_path = f.read().strip()
     except FileNotFoundError:
         raise FileNotFoundError(
@@ -141,7 +164,7 @@ def main():
                       file_title='{} data'.format(name),
                       comment='{} data'.format(name),
                       add_time=True,
-                      multiprocessing=True,
+                      multiprocessing=True, # NOTE: set to False for debugging
                       automatic_storing=True,
                       log_stdout=False,  # Sends stdout to logs
                       )
@@ -163,7 +186,7 @@ def main():
             + client.dashboard_link)
     
     # NOTE: Benchmark function
-    optimizee = NWN_Optimizee(traj, task, learn_dict, 
+    optimizee = NWN_Optimizee(traj, args.task, learn_dict, 
                               os.path.abspath(paths.results_path))
 
     optimizer = SimulatedAnnealingOptimizer(

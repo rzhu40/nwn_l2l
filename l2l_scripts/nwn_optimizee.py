@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from nwn_volterra_test import *
+from nwn_learn_snn import *
 # from nwn_nlt_test import *
 from l2l.optimizees.optimizee import Optimizee
 from os import path
@@ -9,6 +10,7 @@ from misc import *
 
 task_dict = {
             "volterra": volterra_test,
+            "learn_snn": learn_snn,
             # "nlt"     : non_lin_trans_test
             }
 
@@ -46,6 +48,8 @@ class NWN_Optimizee(Optimizee):
         self.learn_dict = learn_dict
         
         self.bound_dict = {
+            "W_in"       : (-1, 1),
+            "b_in"       : (-1, 1),
             "W_in_mean"  : (-1, 1),
             "W_in_std"   : (0, 1),
             "b_in_mean"  : (-1, 1),
@@ -115,7 +119,8 @@ class NWN_Optimizee(Optimizee):
         
         hyper_params = {}
         for key in self.params_to_learn:
-            hyper_params[key] = np.array(traj.individual.__dict__["params"][f"individual.{key}"])
+            # hyper_params[key] = np.array(traj.individual.__dict__["params"][f"individual.{key}"])
+            hyper_params[key] = traj.individual.__dict__["params"][f"individual.{key}"]
             # hyper_params[key] = np.array(traj[f"individual.{key}"])
 
         index   = np.random.randint(100)

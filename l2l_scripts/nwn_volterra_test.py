@@ -1,11 +1,12 @@
 import torch
+from tqdm import tqdm
 # import matplotlib.pyplot as plt
 
 from nwn import *
 from jn_models import *
 from misc import *
-from tqdm import tqdm
-volterra_path = "/home/ruomin_zhu/old/volterra_data/"
+from utils import *
+# volterra_path = "/home/ruomin_zhu/old/volterra_data/"
 # volterra_path = "/project/NASN/rzhu/l2l_data/volterra_data/"
 
 def volterra_test(net,
@@ -75,52 +76,24 @@ def volterra_test(net,
     print(out_dict["tests"].T)
     return result.mean(), out_dict
 
-def prepare_network(index = 0):
-    adj = torch.tensor(pkl_load(volterra_path + "con0.pkl")["adj_matrix"])
-    net = NWN(adj, "sydney")
+# def prepare_network(index = 0):
+#     adj = torch.tensor(pkl_load(volterra_path + "con0.pkl")["adj_matrix"])
+#     net = NWN(adj, "sydney")
 
-    net.params["Ron"]       = 1e4
-    net.params["grow"]      = 5
-    net.params["decay"]     = 10
-    net.params["precision"] = True
-    return net
+#     net.params["Ron"]       = 1e4
+#     net.params["grow"]      = 5
+#     net.params["decay"]     = 10
+#     net.params["precision"] = True
+#     return net
 
 if __name__ == "__main__":    
-    # adj = torch.tensor(pkl_load("volterra_data/con0.pkl")["adj_matrix"])
-    # X,Y = pkl_load("volterra_data/pair_0.pkl")
-    # net = NWN(adj, "sydney")
-    # net, X, Y = prepare_network(1)
     net = prepare_network(1)
-    # R,C = 118, 211
 
-
-    # hyper = {
-    #             "W_in_mean"  : np.float64(np.random.random()),
-    #             "W_in_std"   : np.float64(np.random.random()),
-    #             "b_in_mean"  : np.float64(np.random.random()),
-    #             "b_in_std"   : np.float64(np.random.random()),
-    #             "lambda_mean": np.float64(np.random.random()),
-    #             "lambda_std" : np.float64(np.random.random()),
-    #         }
-    # hyper = {
-    #     "W_in_mean"  : 0.4356,
-    #     "W_in_std"   : 0.6466,
-    #     "b_in_mean"  : 0.8462,
-    #     "b_in_std"   : 0.2449,
-    #     "lambda_mean": 0.4844,
-    #     "lambda_std" : 0.0268
-    #     }
     hyper = {
          "W_in_mean": 2.9,
          "b_in_mean": 0.06,
-         "init_time": .2, 
-        #  "lam"      : torch.normal(0, 0.05, size = (1,6877))
-
-        #  "lam"      : np.random.random(6877) * 0.3 - 0.15,
-        #  "lam" : np.zeros(6877), 
-        #  "W_out"    : np.random.random(101) * 2 - 1,
+         "init_time": 2, 
                 }
     
     mse = volterra_test(net, hyper)
-
     print(mse)
