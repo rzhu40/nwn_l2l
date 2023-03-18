@@ -7,10 +7,11 @@ from dask.distributed import Client, LocalCluster
 from dask_jobqueue import PBSCluster
 
 from l2l.utils.environment import Environment
-from l2l.optimizers.simulatedannealing.optimizer import SimulatedAnnealingParameters, SimulatedAnnealingOptimizer, AvailableCoolingSchedules
+# from l2l.optimizers.simulatedannealing.optimizer import SimulatedAnnealingParameters, SimulatedAnnealingOptimizer, AvailableCoolingSchedules
 from l2l.paths import Paths
 from l2l.logging_tools import create_shared_logger_data, configure_loggers
 
+from prepare_optimizer import *
 from nwn_optimizee import NWN_Optimizee
 logger = logging.getLogger('bin.ltl-fun-sa')
 
@@ -56,6 +57,9 @@ def main():
     parser.add_argument("--task", type=str, required=False, 
                         default="volterra", 
                         help="Benchmark task for the NWN.")
+    parser.add_argument("--optimizer", type=str, required=False, 
+                        default="SA", 
+                        help="Optimizer used for L2L.")
     parser.add_argument("--ngens", type=int,
                         required=False, default=50,
                         help="Number of generations of l2l.")
@@ -73,7 +77,7 @@ def main():
     
     args = parser.parse_args()
     name = f'LTL-NWN-{args.task}-SA'
-    # args.label = "debug04"
+    args.label = "debug_wrap"
     
     # NOTE learn_dict: specify the parameters to learn as keys
     # values are the initial states of eacha parameter, set to "None" for random state.
@@ -95,12 +99,6 @@ def main():
             "b_in"     : np.random.rand(20),
             # "init_time": args.T0
             }    
-    
-    parameters = SimulatedAnnealingParameters(
-                    n_parallel_runs=args.ninds, n_iteration=args.ngens,
-                    noisy_step=.1, temp_decay=.99, 
-                    stop_criterion=-1e-5, seed=21343, 
-                    cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
     
     if args.cluster_mode == "Local":
         cluster = LocalCluster(
@@ -188,13 +186,14 @@ def main():
     # NOTE: Benchmark function
     optimizee = NWN_Optimizee(traj, args.task, learn_dict, 
                               os.path.abspath(paths.results_path))
-
-    optimizer = SimulatedAnnealingOptimizer(
-                    traj, 
-                    optimizee_create_individual=optimizee.create_individual,
-                    optimizee_fitness_weights=(-1.,),
-                    parameters=parameters,
-                    optimizee_bounding_func=optimizee.bounding_func)
+    
+    optimizer = prepare_optimizer(
+                    optimizee, traj, 
+                    optimizer_type=args.optimizer,
+                    n_individual = args.ninds,
+                    n_generation = args.ngens, 
+                    stop_criterion = -1e-5
+                    )
 
     # Add post processing
     env.add_postprocessing(optimizer.post_process)
