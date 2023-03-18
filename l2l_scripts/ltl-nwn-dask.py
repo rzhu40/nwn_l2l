@@ -93,7 +93,7 @@ def main():
             # TODO check if np.array() wrapping is necessary in optimizee
             "W_in"     : np.random.rand(20),
             "b_in"     : np.random.rand(20),
-            "init_time": args.T0
+            # "init_time": args.T0
             }    
     
     parameters = SimulatedAnnealingParameters(

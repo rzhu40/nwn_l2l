@@ -16,8 +16,8 @@ def learn_snn(net, hyper_params):
     for key in hyper_params.keys():
         tensor_dict[key] = torch.tensor(hyper_params[key], dtype=dtype_here)
 
-
-    data_dict   = pkl_load(data_path+"snn_mem.pkl")
+    idx         = torch.randint(100, size = (1,1)).item()
+    data_dict   = pkl_load(data_path+f"snn_mem_{idx}.pkl")
     lambda_dict = pkl_load(data_path+"lambda_data.pkl")
     waves       = data_dict["waves"]
     mems        = data_dict["mems"]
@@ -34,9 +34,9 @@ def learn_snn(net, hyper_params):
     
     W_in = tensor_dict["W_in"] * 3
     b_in = tensor_dict["b_in"]
-    net.junction_state.L = lambda_dict["lambda"]\
-                [int(tensor_dict["init_time"] * 1000)]
-
+    net.junction_state.L = lambda_dict["lambda"][2500]
+    # net.junction_state.L = lambda_dict["lambda"]\
+                # [int(tensor_dict["init_time"] * 1000)]
 
     out_dict = {}
     for i in tqdm(range(num_steps)):
@@ -45,14 +45,19 @@ def learn_snn(net, hyper_params):
         readout[i,:] = net.V[e_read]
 
     result = torch.zeros(n_neurons)
+    mse    = torch.zeros(n_neurons)
     # fig, ax = plt.subplots(n_neurons,1,)
     for i in range(n_neurons):
         lhs = readout[:,:]
-        rhs = mems[:,0,i]
-        weight, result[i], rcond = best_regress(lhs, rhs)
+        rhs = mems[:,i]
+        weight, mse[i], rcond = best_regress(lhs, rhs)
         predict = weight @ lhs.T
+        result[i] = get_RNMSE(predict, rhs)
 
-    out_dict["e_in"] = e_in
+    out_dict["set"]    = idx 
+    out_dict["mse"]    = mse
+    out_dict["rnmse"]  = result
+    out_dict["e_in"]   = e_in
     out_dict["e_read"] = e_read
     out_dict["params"] = tensor_dict
 
