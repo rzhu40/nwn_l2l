@@ -17,8 +17,8 @@ def learn_snn(net, hyper_params):
         tensor_dict[key] = torch.tensor(hyper_params[key], dtype=dtype_here)
 
     idx         = torch.randint(100, size = (1,1)).item()
-    data_dict   = pkl_load(data_path+f"snn_mem_{idx}.pkl")
-    lambda_dict = pkl_load(data_path+"lambda_data.pkl")
+    data_dict   = pkl_load(snn_data_path+f"snn_mem_{idx}.pkl")
+    lambda_dict = pkl_load(snn_data_path+"lambda_data.pkl")
     waves       = data_dict["waves"]
     mems        = data_dict["mems"]
     n_neurons   = mems.shape[-1]
