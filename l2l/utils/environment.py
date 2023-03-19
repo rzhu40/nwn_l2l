@@ -30,6 +30,7 @@ class Environment:
         The trajectory object holds individual parameters and history per
         generation of the exploration process.
         """
+        print("Using internal L2L")
         if 'trajectory' in keyword_args:
             traj = keyword_args['trajectory']
             if isinstance(traj, Trajectory):

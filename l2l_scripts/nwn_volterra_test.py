@@ -2,10 +2,13 @@ import torch
 from tqdm import tqdm
 # import matplotlib.pyplot as plt
 
-from nwn import *
-from jn_models import *
-from misc import *
-from utils import *
+# from nwn import *
+# from jn_models import *
+# from misc import *
+from nwnTorch.nwn import *
+from nwnTorch.jn_models import *
+from nwnTorch.misc import *
+from l2l_scripts.utils import *
 # volterra_path = "/home/ruomin_zhu/old/volterra_data/"
 # volterra_path = "/project/NASN/rzhu/l2l_data/volterra_data/"
 
@@ -13,6 +16,7 @@ def volterra_test(net,
                   hyper_params,
                   fit_steps = 2000):
     
+    from l2l_scripts.utils import volterra_path
     X,Y        = pkl_load(volterra_path+f"pair_0.pkl")
     steps      = len(X)
     n_in       = 1

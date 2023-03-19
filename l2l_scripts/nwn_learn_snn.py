@@ -2,10 +2,10 @@ import torch
 from tqdm import tqdm
 # import matplotlib.pyplot as plt
 
-from nwn import *
-from jn_models import *
-from misc import *
-from utils import *
+from nwnTorch.nwn import *
+from nwnTorch.jn_models import *
+from nwnTorch.misc import *
+from l2l_scripts.utils import *
 # data_path = "/home/ruomin_zhu/snn_data/"
 # volterra_path = "/home/ruomin_zhu/old/volterra_data/"
 # volterra_path = "/project/NASN/rzhu/l2l_data/volterra_data/"
@@ -13,7 +13,7 @@ from utils import *
 def learn_snn(net, 
               hyper_params,
               _test = False):
-    from utils import data_path
+    from l2l_scripts.utils import snn_data_path
     tensor_dict = {}
     dtype_here  = torch.get_default_dtype()
     for key in hyper_params.keys():

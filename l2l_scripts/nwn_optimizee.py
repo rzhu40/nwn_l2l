@@ -5,7 +5,7 @@ from nwn_learn_snn import *
 # from nwn_nlt_test import *
 from l2l.optimizees.optimizee import Optimizee
 from os import path
-from misc import *
+from nwnTorch.misc import *
 # import dask
 
 task_dict = {

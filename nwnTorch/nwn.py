@@ -1,5 +1,5 @@
 import torch
-from jn_models import *
+from .jn_models import *
 from copy import deepcopy
 
 class NWN:

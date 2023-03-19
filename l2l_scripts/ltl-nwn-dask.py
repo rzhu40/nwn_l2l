@@ -8,7 +8,7 @@ from dask.distributed import Client, LocalCluster
 from dask_jobqueue import PBSCluster
 
 file_dir = os.path.dirname(os.path.dirname(__file__))
-sys.path.append(file_dir)
+sys.path.insert(0, file_dir)
 
 from l2l.utils.environment import Environment
 # from l2l.optimizers.simulatedannealing.optimizer import SimulatedAnnealingParameters, SimulatedAnnealingOptimizer, AvailableCoolingSchedules
