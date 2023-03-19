@@ -20,7 +20,8 @@ def prepare_optimizer(optimizee,
                       optimizer_type = "SA", 
                       n_individual = 10,
                       n_generation = 10, 
-                      stop_criterion = -1e-5): 
+                      stop_criterion = -1e-5, 
+                      seed = 1): 
 
     call_string = ""
     if optimizer_type == "SA" or optimizer_type == "simulated_annealing":
@@ -31,13 +32,6 @@ def prepare_optimizer(optimizee,
                         stop_criterion=stop_criterion, seed=21343, 
                         cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
         
-        # optimizer = SimulatedAnnealingOptimizer(
-        #                 trajectory, 
-        #                 optimizee_create_individual=optimizee.create_individual,
-        #                 optimizee_fitness_weights=(-1.,),
-        #                 parameters=parameters,
-        #                 optimizee_bounding_func=optimizee.bounding_func)
-        
     elif optimizer_type == "GD" or optimizer_type == "gradient_descent":
         call_string = "GD"
         parameters = AdamParameters(
@@ -45,15 +39,6 @@ def prepare_optimizer(optimizee,
                         n_random_steps=n_individual,  n_iteration=n_generation, 
                         first_order_decay=0.8, second_order_decay=0.8,
                         stop_criterion=stop_criterion, seed=99)
-        
-        # optimizer = GradientDescentOptimizer(
-        #                 trajectory, 
-        #                 optimizee_create_individual=optimizee.create_individual,
-        #                 optimizee_fitness_weights=(-1.,),
-        #                 parameters=parameters,
-        #                 optimizee_bounding_func=optimizee.bounding_func,
-        #                 #  base_point_evaluations=10
-        #                 )
         
     elif optimizer_type == "CE" or optimizer_type == "cross_entropy":
         call_string = "CE"
@@ -63,13 +48,6 @@ def prepare_optimizer(optimizee,
                         distribution=NoisyGaussian(noise_magnitude=0.1,
                                                     noise_decay=0.95),
                         stop_criterion=stop_criterion, seed=1)
-        
-    
-        # optimizer = CrossEntropyOptimizer(trajectory, 
-        #                 optimizee_create_individual=optimizee.create_individual,
-        #                 optimizee_fitness_weights=(-1.,),
-        #                 parameters=parameters,
-        #                 optimizee_bounding_func=optimizee.bounding_func)
 
     elif optimizer_type == "ES" or optimizer_type == "evolution_strategy":
         call_string = "ES"
@@ -83,7 +61,6 @@ def prepare_optimizer(optimizee,
                         fitness_shaping_enabled=True,
                         stop_criterion=stop_criterion,
                         seed=1)
-
 
     optimizer = optimzier_dict[call_string](
                     trajectory, 
