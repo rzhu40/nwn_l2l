@@ -68,7 +68,6 @@ def main():
                         help="Number of individuals per gen.")
     parser.add_argument("--T0", type=float, required=False, default = 0, 
                         help="Pre-initialization time for the task, in unit of second. ")
-    
     parser.add_argument("--W0", type=float,required=False,
                         help="Starting input weight.")
     parser.add_argument("--b0", type=float,required=False,
@@ -76,8 +75,8 @@ def main():
     
     
     args = parser.parse_args()
-    name = f'LTL-NWN-{args.task}-SA'
-    args.label = "debug_wrap"
+    name = f'LTL-NWN-{args.task}-{args.optimizer}'
+    # args.label = "debug_wrap"
     
     # NOTE learn_dict: specify the parameters to learn as keys
     # values are the initial states of eacha parameter, set to "None" for random state.
