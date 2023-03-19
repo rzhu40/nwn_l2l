@@ -10,7 +10,10 @@ from utils import *
 # volterra_path = "/home/ruomin_zhu/old/volterra_data/"
 # volterra_path = "/project/NASN/rzhu/l2l_data/volterra_data/"
 
-def learn_snn(net, hyper_params):
+def learn_snn(net, 
+              hyper_params,
+              _test = False):
+    from utils import data_path
     tensor_dict = {}
     dtype_here  = torch.get_default_dtype()
     for key in hyper_params.keys():
@@ -38,7 +41,6 @@ def learn_snn(net, hyper_params):
     # net.junction_state.L = lambda_dict["lambda"]\
                 # [int(tensor_dict["init_time"] * 1000)]
 
-    out_dict = {}
     for i in tqdm(range(num_steps)):
         sig_in = W_in * waves[i] + b_in
         net.sim(sig_in.reshape(1,-1), e_in)
@@ -46,12 +48,18 @@ def learn_snn(net, hyper_params):
 
     result = torch.zeros(n_neurons)
     mse    = torch.zeros(n_neurons)
-    # fig, ax = plt.subplots(n_neurons,1,)
+    
+    out_dict = {}
+    if _test:
+        out_dict["target"] = mems
+        out_dict["predict"] = torch.zeros(mems.shape)
     for i in range(n_neurons):
         lhs = readout[:,:]
         rhs = mems[:,i]
         weight, mse[i], rcond = best_regress(lhs, rhs)
         predict = weight @ lhs.T
+        if _test:
+            out_dict["predict"][:,i] = predict
         result[i] = get_RNMSE(predict, rhs)
 
     out_dict["set"]    = idx 
