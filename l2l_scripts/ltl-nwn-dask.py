@@ -1,7 +1,7 @@
 import logging.config
 import os
 import sys
-import argparse
+from argparse import ArgumentParser, RawTextHelpFormatter
 import numpy as np 
 from time import strftime
 from dask.distributed import Client, LocalCluster
@@ -20,7 +20,17 @@ from nwn_optimizee import NWN_Optimizee
 logger = logging.getLogger('bin.ltl-fun-sa')
 
 def main():
-    parser = argparse.ArgumentParser()
+    usage = "\
+            Call this script from command line.  \n\
+            Make sure to do some fine-tuning before running. High parallelization doesn't mean faster simulations. \n\
+            Examples for good performances are: \n\
+            python l2l_scripts/ltl-nwn-dask.py --nworkers 2 --tpw 1 --ngen 50 --nind 16 --optimizer ES --task learn_snn \n\
+            python l2l_scripts/ltl-nwn-dask.py --cluster_mode PBS --njobs 8 --ncores 4 --nworkers 1 --mem 4 --walltime 20 --ngen 50 --nind 16 --optimizer SA --task learn_snn \
+            "
+    parser = ArgumentParser(
+                description=usage,
+                formatter_class=RawTextHelpFormatter
+                )
     # NOTE These are for dask
     # Just using one node per script
     # parser.add_argument("--nnodes", type=int, required=True,
