@@ -39,10 +39,17 @@ def volterra_test(net,
     # net.junction_state.L = torch.normal(mean = tensor_dict["lambda_mean"] * net.params["Lmax"], 
     #                                     std  = tensor_dict["lambda_std"] * net.params["Lmax"],
     #                                     size = (1, net.number_of_junctions))
-
-    W_in                 = tensor_dict["W_in_mean"] * 3
-    b_in                 = tensor_dict["b_in_mean"]
-    net.junction_state.L = lambda_dict["lambda"][int(tensor_dict["init_time"] * 1000)]
+    if "W_in_mean" in tensor_dict.keys():
+        W_in = tensor_dict["W_in_mean"] * 3
+    else: 
+        W_in = 0.06978787 
+    if "b_in_mean" in tensor_dict.keys():
+        b_in = tensor_dict["b_in_mean"]
+    else: 
+        b_in = 0.5022748
+    if "init_time" in tensor_dict.keys():
+        net.junction_state.L = lambda_dict["lambda"][int(tensor_dict["init_time"] * 1000)]
+        
     # net.junction_state.L = tensor_dict["lam"]
     # weight               = tensor_dict["W_out"]
 
@@ -62,7 +69,7 @@ def volterra_test(net,
 
     out_dict = {}
     out_dict["tests"] = torch.zeros(5,2)
-    print(f'----- W_in = {W_in:.4}, b_in = {b_in:.4}, init_time = {int(tensor_dict["init_time"] * 10000)} -----')
+    print(f'----- W_in = {W_in:.4}, b_in = {b_in:.4}, init_time = {int(tensor_dict["init_time"] * 1000)} -----')
     for i in range(5):
         index   = np.random.randint(100)
         _,Y     = pkl_load(volterra_path + f"pair_{index}.pkl")
