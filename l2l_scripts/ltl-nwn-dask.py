@@ -100,16 +100,20 @@ def main():
         learn_dict = {
             "W_in_mean": args.W0,
             "b_in_mean": args.b0,
-            "init_time": args.T0
+            # "init_time": args.T0
             }
         
     # for learn snn
     elif args.task == "learn_snn":
+        # scale = 1/np.sqrt(20)
+        scale = 0.1
         learn_dict = {
             # NOTE initializing as 2D arrays somehow leads to bugs
             # TODO check if np.array() wrapping is necessary in optimizee
-            "W_in"     : np.random.rand(20),
-            "b_in"     : np.random.rand(20),
+            # "W_in"     : np.random.rand(20),
+            # "b_in"     : np.random.rand(20),
+            "W_in"     : np.random.rand(20) * scale * 2 - scale,
+            "b_in"     : np.random.rand(20) * scale * 2 - scale,
             # "init_time": args.T0
             }    
     
