@@ -1,5 +1,5 @@
 import torch
-import wires 
+from . import wires 
 import numpy as np
 
 def generate_fully_connected(shape = (128,128)):
