@@ -1,5 +1,6 @@
 import torch
 from tqdm import tqdm
+import numpy as np
 # import matplotlib.pyplot as plt
 
 from nwnTorch.nwn import *
@@ -12,14 +13,20 @@ from l2l_scripts.utils import *
 
 def learn_snn(net, 
               hyper_params,
-              _test = False):
+              _test = False,
+              test_idx = 0):
     from l2l_scripts.utils import snn_data_path
     tensor_dict = {}
     dtype_here  = torch.get_default_dtype()
     for key in hyper_params.keys():
         tensor_dict[key] = torch.tensor(hyper_params[key], dtype=dtype_here)
 
-    idx         = torch.randint(100, size = (1,1)).item()
+    # idx         = torch.randint(100, size = (1,1)).item()
+    if _test:
+        idx = test_idx
+    else:
+        idx = np.random.randint(100)
+    # print(idx)
     data_dict   = pkl_load(snn_data_path+f"snn_mem_{idx}.pkl")
     lambda_dict = pkl_load(snn_data_path+"lambda_data.pkl")
     waves       = data_dict["waves"]
@@ -35,11 +42,15 @@ def learn_snn(net,
     e_read   = shuffled[-num_read:]
     readout  = torch.zeros(num_steps, num_read)
     
-    W_in = tensor_dict["W_in"] * 3
+    W_in = tensor_dict["W_in"] 
+    # W_in = tensor_dict["W_in"] * 3
     b_in = tensor_dict["b_in"]
-    net.junction_state.L = lambda_dict["lambda"][2500]
-    # net.junction_state.L = lambda_dict["lambda"]\
-                # [int(tensor_dict["init_time"] * 1000)]
+    # net.junction_state.L = lambda_dict["lambda"][2500]
+    if "init_time" in tensor_dict.keys():
+        net.junction_state.L = lambda_dict["lambda"]\
+                [int(tensor_dict["init_time"] * 1000)]
+    else: 
+        net.junction_state.L = lambda_dict["lambda"][0]
 
     for i in tqdm(range(num_steps)):
         sig_in = W_in * waves[i] + b_in
@@ -69,7 +80,8 @@ def learn_snn(net,
     out_dict["e_read"] = e_read
     out_dict["params"] = tensor_dict
 
-    print(result)
+    print(idx, result.mean())
+    # print(waves)
     # print(out_dict)
     return result.mean(), out_dict
 
@@ -83,3 +95,4 @@ if __name__ == "__main__":
     }
 
     fitness = learn_snn(net, hyper)
+    
