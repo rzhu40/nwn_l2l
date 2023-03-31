@@ -28,14 +28,15 @@ def prepare_optimizer(optimizee,
         call_string = "SA"
         parameters = SimulatedAnnealingParameters(
                         n_parallel_runs=n_individual, n_iteration=n_generation,
-                        noisy_step=.1, temp_decay=.99, 
+                        noisy_step=.05, temp_decay=.995, 
+                        # noisy_step=.1, temp_decay=.995, 
                         stop_criterion=stop_criterion, seed=21343, 
                         cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
         
     elif optimizer_type == "GD" or optimizer_type == "gradient_descent":
         call_string = "GD"
         parameters = AdamParameters(
-                        learning_rate=0.001, exploration_step_size=0.001, 
+                        learning_rate=0.01, exploration_step_size=0.01, 
                         n_random_steps=n_individual,  n_iteration=n_generation, 
                         first_order_decay=0.8, second_order_decay=0.8,
                         stop_criterion=stop_criterion, seed=99)
@@ -45,8 +46,10 @@ def prepare_optimizer(optimizee,
         parameters = CrossEntropyParameters(
                         pop_size=n_individual, n_iteration=n_generation,
                         rho=0.5, smoothing=0.0, temp_decay=0, 
-                        distribution=NoisyGaussian(noise_magnitude=0.1,
+                        distribution=NoisyGaussian(noise_magnitude=0.01,
                                                     noise_decay=0.95),
+                        # distribution=NoisyGaussian(noise_magnitude=0.1,
+                        #                             noise_decay=0.95),
                         stop_criterion=stop_criterion, seed=1)
 
     elif optimizer_type == "ES" or optimizer_type == "evolution_strategy":
@@ -69,6 +72,4 @@ def prepare_optimizer(optimizee,
                     parameters=parameters,
                     optimizee_bounding_func=optimizee.bounding_func)
 
-    
-        
     return optimizer
