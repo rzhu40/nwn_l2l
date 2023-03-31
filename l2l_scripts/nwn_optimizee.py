@@ -76,9 +76,9 @@ class NWN_Optimizee(Optimizee):
         init_dict = {}
         for key in self.learn_dict:
             if self.learn_dict[key] is None:
-                init_dict[key] = self.params_pool[key]
+                init_dict[key] = np.float64(self.params_pool[key])
             else:
-                init_dict[key] = self.learn_dict[key]
+                init_dict[key] = np.float64(self.learn_dict[key])
         return init_dict
 
     def bounding_func(self, individual):
