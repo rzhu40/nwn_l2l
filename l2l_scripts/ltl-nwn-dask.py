@@ -81,10 +81,10 @@ def main():
                         required=False, default=16,
                         help="Number of individuals per gen.")
     parser.add_argument("--T0", type=float, required=False, default = 0, 
-                        help="Pre-initialization time for the task, in unit of second. ")
-    parser.add_argument("--W0", type=float,required=False,
+                        help="Pre-initialization time for the task, in unit of 0.1 second. ")
+    parser.add_argument("--W0", type=float, required=False, #default = 1,
                         help="Starting input weight.")
-    parser.add_argument("--b0", type=float,required=False,
+    parser.add_argument("--b0", type=float, required=False, #default = 0,
                         help="Starting input bias.")
     
     
@@ -100,7 +100,7 @@ def main():
         learn_dict = {
             "W_in_mean": args.W0,
             "b_in_mean": args.b0,
-            # "init_time": args.T0
+            "init_time": args.T0
             }
         
     # for learn snn
@@ -114,7 +114,7 @@ def main():
             # "b_in"     : np.random.rand(20),
             "W_in"     : np.random.rand(20) * scale * 2 - scale,
             "b_in"     : np.random.rand(20) * scale * 2 - scale,
-            # "init_time": args.T0
+            "init_time": args.T0
             }    
     
     if args.cluster_mode == "Local":
