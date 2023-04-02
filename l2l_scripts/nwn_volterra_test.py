@@ -48,7 +48,7 @@ def volterra_test(net,
     else: 
         b_in = 0.5022748
     if "init_time" in tensor_dict.keys():
-        net.junction_state.L = lambda_dict["lambda"][int(tensor_dict["init_time"] * 1000)]
+        net.junction_state.L = lambda_dict["lambda"][int(tensor_dict["init_time"] * 10000)]
         
     # net.junction_state.L = tensor_dict["lam"]
     # weight               = tensor_dict["W_out"]
@@ -69,7 +69,7 @@ def volterra_test(net,
 
     out_dict = {}
     out_dict["tests"] = torch.zeros(5,2)
-    print(f'----- W_in = {W_in:.4}, b_in = {b_in:.4}, init_time = {int(tensor_dict["init_time"] * 1000)} -----')
+    print(f'----- W_in = {W_in:.4}, b_in = {b_in:.4}, init_time = {int(tensor_dict["init_time"] * 10000)} -----')
     for i in range(5):
         index   = np.random.randint(100)
         _,Y     = pkl_load(volterra_path + f"pair_{index}.pkl")
