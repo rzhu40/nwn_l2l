@@ -260,7 +260,8 @@ class SimulatedAnnealingOptimizer(Optimizer):
 
         logger.debug("Current best fitness within population is %.2f", max(self.current_fitness_value_list))
 
-        temp_list = np.array(self.current_fitness_value_list)
+        # temp_list = np.array(self.current_fitness_value_list)
+        temp_list = np.array(weighted_fitness_list)
         best_indiv_index = np.argmax(self.current_fitness_value_list)
         best_indiv = self.current_individual_list[best_indiv_index]
         best_fitness = self.current_fitness_value_list[best_indiv_index]
