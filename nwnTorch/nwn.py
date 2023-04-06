@@ -20,7 +20,6 @@ class NWN:
                 ``miranda`` ;
                 ``linear``
         :type junction_mode: string
-        
         """
         self.adjMat  = adjMat.clone().detach()
         self.jn_mode = junction_mode

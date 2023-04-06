@@ -128,6 +128,32 @@ def best_regress(lhs, rhs, search_min = -15):
     best = torch.argmin(results)
     return Ws[best], results[best], -best
 
+# def best_regress(lhs, rhs, search_min = -15):
+#     """
+#     lhs: [n_samples, n_input_features]
+#     rhs: [n_samples, n_target_features]
+#     """
+#     searches = torch.arange(-1, search_min, -1)
+#     n_search = len(searches) + 1
+#     results = torch.zeros(n_search)
+#     # Ws = torch.zeros(n_search, lhs.shape[1], dtype = lhs.dtype)
+#     Ws = []
+#     for i in range(n_search):
+#         if i == 0:
+#             rcond = None
+#         else:
+#             rcond = torch.float_power(10, searches[i-1])
+
+#         # Ws[i] = torch.linalg.lstsq(lhs, rhs, rcond = rcond).solution
+#         temp = torch.linalg.lstsq(lhs, rhs, rcond = rcond).solution
+#         # predict = temp @ lhs.T
+#         predict = lhs @ temp
+#         results[i] = get_MSE(predict, rhs)
+#         Ws.append(temp)
+
+#     best = torch.argmin(results)
+#     return Ws[best], results[best], -best
+
 def error_shade(mean, err,
                 xdata = None,
                 ax = None,

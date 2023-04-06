@@ -12,7 +12,7 @@ class junction_sydney:
         self.params["grow"]      = 5     #smax
         self.params["decay"]     = 10    #b
         self.params["collapse"]  = False
-        self.params["precision"] = False # to avoid the overshoot of conductance
+        self.params["precision"] = True # to avoid the overshoot of conductance
         self.params["Lcrit"]     = 1e-1
         self.params["Lmax"]      = 1.5e-1
 
@@ -36,7 +36,6 @@ class junction_sydney:
 
         self.G = 1/(tun + self.params["Ron"] + shift) \
                             + 1/self.params["Roff"]
-
 
     def updateL(self):
         was_open = abs(self.L) >= self.params["Lcrit"]
