@@ -24,8 +24,8 @@ def volterra_test(net,
     # torch.manual_seed(0)
     readout    = torch.zeros(steps, n_out)
     
-    lambda_dict          = pkl_load(volterra_path+"lambda_data.pkl")
-    electrodes           = lambda_dict["electodes"]
+    lambda_dict = pkl_load(volterra_path+"lambda_data.pkl")
+    electrodes  = lambda_dict["electodes"]
 
     np.random.seed(0)
     elec_out  = np.random.choice(1024, size = (1,n_out), replace=None)

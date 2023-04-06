@@ -48,7 +48,7 @@ def learn_snn(net,
     # net.junction_state.L = lambda_dict["lambda"][2500]
     if "init_time" in tensor_dict.keys():
         net.junction_state.L = lambda_dict["lambda"]\
-                [int(tensor_dict["init_time"] * 1000)]
+                [int(tensor_dict["init_time"] * 10000)]
     else: 
         net.junction_state.L = lambda_dict["lambda"][0]
 

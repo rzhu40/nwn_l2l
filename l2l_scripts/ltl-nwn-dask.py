@@ -104,18 +104,24 @@ def main():
             }
         
     # for learn snn
-    elif args.task == "learn_snn":
+    elif args.task == "learn_snn" or "learn_snn_new":
+        from nwnTorch.misc import pkl_load
         # scale = 1/np.sqrt(20)
         scale = 0.1
-        learn_dict = {
-            # NOTE initializing as 2D arrays somehow leads to bugs
-            # TODO check if np.array() wrapping is necessary in optimizee
-            # "W_in"     : np.random.rand(20),
-            # "b_in"     : np.random.rand(20),
-            "W_in"     : np.random.rand(20) * scale * 2 - scale,
-            "b_in"     : np.random.rand(20) * scale * 2 - scale,
-            "init_time": args.T0
-            }    
+        
+        read_path  = "/home/rzhu/data_access/l2l_data/logs/LTL-NWN-learn_snn_new-SA/run-no-2023-04-06-190452/"
+        id         = 20
+        params     = pkl_load(os.path.join(read_path,f"results/gen_{49:04d}_ind_{id:04d}.pkl"))["params"]
+        learn_dict = params
+        # learn_dict = {
+        #     # NOTE initializing as 2D arrays somehow leads to bugs
+        #     # TODO check if np.array() wrapping is necessary in optimizee
+        #     # "W_in"     : np.random.rand(20),
+        #     # "b_in"     : np.random.rand(20),
+        #     "W_in"     : np.random.rand(20) * scale * 2 - scale,
+        #     "b_in"     : np.random.rand(20) * scale * 2 - scale,
+        #     "init_time": args.T0
+        #     }    
     
     if args.cluster_mode == "Local":
         cluster = LocalCluster(

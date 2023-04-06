@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from nwn_volterra_test import *
 from nwn_learn_snn import *
+from nwn_snn_new import *
 # from nwn_nlt_test import *
 from l2l.optimizees.optimizee import Optimizee
 from os import path
@@ -11,6 +12,7 @@ from nwnTorch.misc import *
 task_dict = {
             "volterra": volterra_test,
             "learn_snn": learn_snn,
+            "learn_snn_new": learn_snn_new,
             # "nlt"     : non_lin_trans_test
             }
 
