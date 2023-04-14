@@ -4,3 +4,5 @@ dask-worker-space/
 *.json
 l2l_scripts/bin/path.conf
 nwn_l2l.code-workspace
+*.pkl
+*.pdf
