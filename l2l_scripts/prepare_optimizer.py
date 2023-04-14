@@ -27,7 +27,7 @@ def prepare_optimizer(optimizee,
         call_string = "SA"
         parameters = SimulatedAnnealingParameters(
                         n_parallel_runs=n_individual, n_iteration=n_generation,
-                        noisy_step=.2, temp_decay=.995, 
+                        noisy_step=.1, temp_decay=.995, 
                         # noisy_step=.1, temp_decay=.995, 
                         stop_criterion=stop_criterion, seed=21343, 
                         cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
@@ -58,7 +58,7 @@ def prepare_optimizer(optimizee,
                         n_iteration=n_generation,
                         learning_rate=0.05,
                         # learning_rate_decay=0.95,
-                        noise_std=0.1,
+                        noise_std=0.01,
                         mirrored_sampling_enabled=True,
                         fitness_shaping_enabled=True,
                         stop_criterion=stop_criterion,
