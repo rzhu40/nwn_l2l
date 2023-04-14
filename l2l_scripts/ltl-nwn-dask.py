@@ -24,7 +24,9 @@ def main():
             Call this script from command line.  \n\
             Make sure to do some fine-tuning before running. High parallelization doesn't mean faster simulations. \n\
             Examples for good performances are: \n\
-            python l2l_scripts/ltl-nwn-dask.py --nworkers 2 --tpw 1 --ngen 50 --nind 16 --optimizer ES --task learn_snn \n\
+            NOTE that --tpw means number of parallel task run by each worker, \n\
+            and --cpt means number of cores used per task \n\
+            python l2l_scripts/ltl-nwn-dask.py --nworkers 2 --tpw 1 --cpt 1 --ngen 50 --nind 16 --optimizer ES --task learn_snn \n\
             python l2l_scripts/ltl-nwn-dask.py --cluster_mode PBS --njobs 8 --ncores 4 --nworkers 1 --mem 4 --walltime 20 --ngen 50 --nind 16 --optimizer SA --task learn_snn \
             "
     parser = ArgumentParser(
@@ -32,7 +34,7 @@ def main():
                 formatter_class=RawTextHelpFormatter
                 )
     # NOTE These are for dask
-    # Just using one node per script
+    # * Just using one node per script
     # parser.add_argument("--nnodes", type=int, required=True,
     #                     help="Number of nodes to request.")
 #     parser.add_argument("--scheduler", type = int,
@@ -47,6 +49,9 @@ def main():
     parser.add_argument("--tpw", type=int, 
                         required=False, default = 1,
                         help="Number of threads per worker. Local only!")
+    parser.add_argument("--cpt", type=int, 
+                        required=False, default = 1,
+                        help="Number of cores per thread. Local only!")
     # NOTE following are for PBS clusters.
     parser.add_argument("--njobs", type=int, 
                         required=False, default = 1,
@@ -93,9 +98,9 @@ def main():
     # args.label = "debug_wrap"
     
     # NOTE learn_dict: specify the parameters to learn as keys
-    # values are the initial states of eacha parameter, set to "None" for random state.
+    # * values are the initial states of eacha parameter, set to "None" for random state.
 
-    # for volterra
+    # * for volterra
     if args.task == "volterra":
         learn_dict = {
             "W_in_mean": args.W0,
@@ -103,28 +108,31 @@ def main():
             "init_time": args.T0
             }
         
-    # for learn snn
+    # * for learn snn
     elif args.task == "learn_snn" or "learn_snn_new":
         from nwnTorch.misc import pkl_load
         # scale = 1/np.sqrt(20)
-        scale = 0.1
+        scale = 0.01
         
-        read_path  = "/home/rzhu/data_access/l2l_data/logs/LTL-NWN-learn_snn_new-SA/run-no-2023-04-06-190452/"
-        id         = 20
-        params     = pkl_load(os.path.join(read_path,f"results/gen_{49:04d}_ind_{id:04d}.pkl"))["params"]
-        learn_dict = params
-        # learn_dict = {
-        #     # NOTE initializing as 2D arrays somehow leads to bugs
-        #     # TODO check if np.array() wrapping is necessary in optimizee
-        #     # "W_in"     : np.random.rand(20),
-        #     # "b_in"     : np.random.rand(20),
-        #     "W_in"     : np.random.rand(20) * scale * 2 - scale,
-        #     "b_in"     : np.random.rand(20) * scale * 2 - scale,
-        #     "init_time": args.T0
-        #     }    
+        # read_path  = "/home/rzhu/data_access/l2l_data/logs/LTL-NWN-learn_snn_new-SA/run-no-2023-04-06-190452/"
+        # id         = 20
+        # params     = pkl_load(os.path.join(read_path,f"results/gen_{49:04d}_ind_{id:04d}.pkl"))["params"]
+        # learn_dict = params
+        learn_dict = {
+            # NOTE initializing as 2D arrays somehow leads to bugs
+            # TODO check if np.array() wrapping is necessary in optimizee
+            # "W_in"     : np.random.rand(20),
+            # "b_in"     : np.random.rand(20),
+            "W_in"     : np.random.rand(20) * scale * 2 - scale,
+            "b_in"     : np.random.rand(20) * scale * 2 - scale,
+            # "init_time": args.T0
+            }    
     
     if args.cluster_mode == "Local":
+        os.environ['OMP_NUM_THREADS'] = str(args.cpt)
+        os.environ['MKL_NUM_THREADS'] = str(args.cpt)
         cluster = LocalCluster(
+                    processes = True,
                     n_workers = args.nworkers,
                     threads_per_worker = args.tpw,
                     scheduler_port = 12121,
@@ -198,7 +206,14 @@ def main():
     configure_loggers()
     # Get the trajectory from the environment
     traj = env.trajectory
-
+    
+    if args.cluster_mode == "Local":
+        logger.info("Local machine used for computing, resources used: \n" 
+                    +f"n worker : {args.nworkers} \n" 
+                    +f"n threads per worker : {args.tpw} \n" 
+                    +f"n cores per thread : {args.cpt}"
+                    )
+    
     logger.info(
             "dask scheduler address:" 
             + client.scheduler.address)
