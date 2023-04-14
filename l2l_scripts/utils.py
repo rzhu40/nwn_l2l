@@ -14,7 +14,7 @@ from nwnTorch.misc import *
 # snn_data_path = "/home/ruomin_zhu/l2l_data/snn_data_new/"
 # volterra_path = "/home/ruomin_zhu/l2l_data/volterra_data/"
 
-snn_data_path = "/home/rzhu/data_access/l2l_data/snn_data_new/"
+snn_data_path = "/home/rzhu/data_access/l2l_data/snn_data_long/"
 volterra_path = "/home/rzhu/data_access/l2l_data/volterra_data/"
 
 def prepare_network(index = 0):
