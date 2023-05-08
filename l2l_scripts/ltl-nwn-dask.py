@@ -101,15 +101,15 @@ def main():
     # * values are the initial states of eacha parameter, set to "None" for random state.
 
     # * for volterra
-    if args.task == "volterra":
+    if args.task in ["volterra", "volterra_new"]:
         learn_dict = {
             "W_in_mean": args.W0,
             "b_in_mean": args.b0,
             "init_time": args.T0
             }
-        
+
     # * for learn snn
-    elif args.task == "learn_snn" or "learn_snn_new":
+    elif args.task in ["learn_snn", "learn_snn_new"]:
         from nwnTorch.misc import pkl_load
         # scale = 1/np.sqrt(20)
         scale = 0.01
@@ -193,7 +193,8 @@ def main():
                       file_title='{} data'.format(name),
                       comment='{} data'.format(name),
                       add_time=True,
-                      multiprocessing=True, # NOTE: set to False for debugging
+                      multiprocessing=False, # NOTE: set to False for debugging
+                    #   multiprocessing=True, # NOTE: set to False for debugging
                       automatic_storing=True,
                       log_stdout=False,  # Sends stdout to logs
                       )

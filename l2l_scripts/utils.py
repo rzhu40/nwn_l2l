@@ -16,6 +16,7 @@ from nwnTorch.misc import *
 
 snn_data_path = "/home/rzhu/data_access/l2l_data/snn_data_long/"
 volterra_path = "/home/rzhu/data_access/l2l_data/volterra_data/"
+# volterra_path = "/home/rzhu/data_access/l2l_data/volterra_data_new/"
 
 def prepare_network(index = 0):
     adj = torch.tensor(pkl_load(snn_data_path + "con0.pkl")["adj_matrix"])

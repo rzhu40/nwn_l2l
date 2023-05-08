@@ -27,8 +27,8 @@ def prepare_optimizer(optimizee,
         call_string = "SA"
         parameters = SimulatedAnnealingParameters(
                         n_parallel_runs=n_individual, n_iteration=n_generation,
-                        noisy_step=.1, temp_decay=.995, 
-                        # noisy_step=.1, temp_decay=.995, 
+                        noisy_step=.01, temp_decay=.995, 
+                        # noisy_step=.1, temp_decay=.995, # * This is good for snn and old volterra
                         stop_criterion=stop_criterion, seed=21343, 
                         cooling_schedule=AvailableCoolingSchedules.QUADRATIC_ADDAPTIVE)
         

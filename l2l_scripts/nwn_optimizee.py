@@ -3,6 +3,7 @@ import torch
 from nwn_volterra_test import *
 from nwn_learn_snn import *
 from nwn_snn_new import *
+from nwn_volterra_new import *
 # from nwn_nlt_test import *
 from l2l.optimizees.optimizee import Optimizee
 from os import path
@@ -10,9 +11,10 @@ from nwnTorch.misc import *
 # import dask
 
 task_dict = {
-            "volterra": volterra_test,
-            "learn_snn": learn_snn,
-            "learn_snn_new": learn_snn_new,
+            "volterra"      : volterra_test,
+            "volterra_new"  : volterra_new,
+            "learn_snn"     : learn_snn,
+            "learn_snn_new" : learn_snn_new,
             # "nlt"     : non_lin_trans_test
             }
 
@@ -20,7 +22,6 @@ class NWN_Optimizee(Optimizee):
     """
     Implements NWN optimizee. 
     NOTE: Make sure the optimizee_fitness_weights is set to (-1,) to minimize the value of the function
-
     """
 
     def __init__(self, traj = None,  
@@ -125,9 +126,9 @@ class NWN_Optimizee(Optimizee):
             hyper_params[key] = traj.individual.__dict__["params"][f"individual.{key}"]
             # hyper_params[key] = np.array(traj[f"individual.{key}"])
 
-        index   = np.random.randint(100)
-        net     = prepare_network(index)
-        task    = task_dict[self.benchmark]
+        index = np.random.randint(100)
+        net   = prepare_network(index)
+        task  = task_dict[self.benchmark]
 
         fitness, out_dict = task(net, hyper_params)
         fname = path.join(self.output_path, f"gen_{gen_idx:04d}_ind_{ind_idx:04d}.pkl")

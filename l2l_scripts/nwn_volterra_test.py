@@ -14,7 +14,9 @@ from l2l_scripts.utils import *
 
 def volterra_test(net,
                   hyper_params,
-                  fit_steps = 2000):
+                  fit_steps = 2000,
+                  _test = False,
+                  test_idx = 0):
     
     from l2l_scripts.utils import volterra_path
     X,Y        = pkl_load(volterra_path+f"pair_0.pkl")
@@ -70,18 +72,34 @@ def volterra_test(net,
     out_dict = {}
     out_dict["tests"] = torch.zeros(5,2)
     print(f'----- W_in = {W_in:.4}, b_in = {b_in:.4}, init_time = {int(tensor_dict["init_time"] * 10000)} -----')
-    for i in range(5):
-        index   = np.random.randint(100)
+    weights = []
+
+    if _test:
+        index    = test_idx
         _,Y     = pkl_load(volterra_path + f"pair_{index}.pkl")
         rhs     = Y[-fit_steps:]
-        weight, result[i], rcond = best_regress(lhs, rhs)
-        out_dict["tests"][i,0] = index
-        out_dict["tests"][i,1] = result[i]
+        weight, result[0], rcond = best_regress(lhs, rhs)
+        weights.append(weight)
+        out_dict["tests"][0,0] = index
+        out_dict["tests"][0,1] = result[0]
 
+    else:
+        for i in range(5):
+            index   = np.random.randint(100)
+            _,Y     = pkl_load(volterra_path + f"pair_{index}.pkl")
+            rhs     = Y[-fit_steps:]
+            weight, result[i], rcond = best_regress(lhs, rhs)
+            weights.append(weight)
+            out_dict["tests"][i,0] = index
+            out_dict["tests"][i,1] = result[i]
+    
+    if _test:
+        out_dict["lhs"] = lhs
+        out_dict["weights"] = torch.stack(weights)
     out_dict["length"] = steps
     out_dict["runned"] = torch.sum(netG != 0)
     out_dict["netG"]   = netG
-    out_dict["weight"] = weight
+    # out_dict["weight"] = weight
     out_dict["rcond"]  = rcond
     out_dict["params"] = hyper_params
     print(out_dict["tests"].T)
